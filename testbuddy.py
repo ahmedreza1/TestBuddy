@@ -6,6 +6,7 @@ from PyQt5 import QtGui, QtCore
 from PyQt5.QtGui import QDesktopServices, QCursor, QFont, QIcon
 from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtWidgets import QButtonGroup  # Import QButtonGroup
+from PyQt5.QtWidgets import QApplication, QMainWindow, QRadioButton, QLabel, QPushButton, QVBoxLayout, QWidget, QLineEdit, QHBoxLayout, QScrollArea, QSizePolicy
 
 
 class BrowserOpener(QMainWindow):
@@ -15,28 +16,34 @@ class BrowserOpener(QMainWindow):
 
     def init_ui(self):
         self.setWindowTitle("TestBuddy by Md Ahmed Reza")
-        self.setGeometry(100, 100, 900, 700)
+        self.setGeometry(100, 100, 1200, 800)  # Increased initial size
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
-        layout = QVBoxLayout()
-        layout.setContentsMargins(30, 30, 30, 30)
+
+        main_layout = QVBoxLayout(self.central_widget)
+        main_layout.setContentsMargins(10, 10, 10, 10)
+        main_layout.setSpacing(10)
+
+        # Settings widget and layout
+        self.settings_widget = QWidget()
+        settings_layout = QVBoxLayout(self.settings_widget)
 
         font = QFont()
         font.setPointSize(12)
-        self.central_widget.setFont(font)
+        self.settings_widget.setFont(font)
 
         name_label = QLabel('Welcome to TestBuddy. If you find this cool and want to reach out, send me hi <a href="mailto:ahmedreza80@gmail.com">Md Ahmed Reza</a>')
         name_label.setOpenExternalLinks(True)
         name_label.setStyleSheet("color: #555;")
-        layout.addWidget(name_label, alignment=Qt.AlignTop | Qt.AlignRight)
+        settings_layout.addWidget(name_label, alignment=Qt.AlignTop | Qt.AlignRight)
 
         self.url_input = QLineEdit()
         self.url_input.setPlaceholderText("Enter URL")
         self.url_input.setFixedHeight(40)
-        layout.addWidget(self.url_input, alignment=Qt.AlignTop)
+        settings_layout.addWidget(self.url_input, alignment=Qt.AlignTop)
 
         self.label = QLabel("Select a browser:")
-        layout.addWidget(self.label)
+        settings_layout.addWidget(self.label)
 
         # Create button groups
         self.browser_button_group = QButtonGroup(self)  # Group for browser options
@@ -54,14 +61,14 @@ class BrowserOpener(QMainWindow):
         self.height_input.setFixedWidth(100)
         size_button = QPushButton("Set Size")
         size_button.clicked.connect(self.set_browser_size)
-        
+
         size_layout.addWidget(self.width_input)
         size_layout.addWidget(self.height_input)
         size_layout.addWidget(size_button)
-        layout.addLayout(size_layout)
+        settings_layout.addLayout(size_layout)
 
         self.mobile_device_label = QLabel("Select a mobile device:")
-        layout.addWidget(self.mobile_device_label)
+        settings_layout.addWidget(self.mobile_device_label)
 
         self.mobile_device_options = ["iPhone X", "Samsung Galaxy S10", "iPad Pro", "iPhone 14", "Samsung Galaxy S23"]
         self.mobile_device_radio_buttons = []
@@ -69,53 +76,65 @@ class BrowserOpener(QMainWindow):
         # Adding mobile device radio buttons to their group
         for device in self.mobile_device_options:
             radio_button = QRadioButton(device)
-            layout.addWidget(radio_button)
+            settings_layout.addWidget(radio_button)
             self.mobile_device_radio_buttons.append(radio_button)
             self.mobile_device_button_group.addButton(radio_button)
 
         self.orientation_label = QLabel("Select orientation:")
-        layout.addWidget(self.orientation_label)
+        settings_layout.addWidget(self.orientation_label)
 
         self.orientation_options = ["Portrait", "Landscape"]
         self.orientation_radio_buttons = []
 
         for orientation in self.orientation_options:
             radio_button = QRadioButton(orientation)
-            layout.addWidget(radio_button)
+            settings_layout.addWidget(radio_button)
             self.orientation_radio_buttons.append(radio_button)
 
         # Adding browser radio buttons to their group
         for browser in self.browser_options:
             radio_button = QRadioButton(browser)
             radio_button.setIcon(QIcon(f"{browser.lower()}.png"))
-            layout.addWidget(radio_button)
+            settings_layout.addWidget(radio_button)
             self.browser_radio_buttons.append(radio_button)
-            self.browser_button_group.addButton(radio_button) 
-
+            self.browser_button_group.addButton(radio_button)
+        
         self.open_button = QPushButton("Open Browser")
         self.open_button.setStyleSheet("background-color: #0099CC; color: white; padding: 10px; border: none; border-radius: 5px;")
         self.open_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.open_button.clicked.connect(self.open_virtual_browser)
-        layout.addWidget(self.open_button)
+        settings_layout.addWidget(self.open_button)
 
         self.debug_button = QPushButton("Open Debugger")
         self.debug_button.setStyleSheet("background-color: #0099CC; color: white; padding: 10px; border: none; border-radius: 5px;")
         self.debug_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.debug_button.clicked.connect(self.open_debugger)
-        layout.addWidget(self.debug_button)
+        settings_layout.addWidget(self.debug_button)
 
-        self.result_label = QLabel()
-        layout.addWidget(self.result_label)
+        # Add settings layout to the main layout
+        main_layout.addWidget(self.settings_widget)
 
-        self.browser_scroll_area = QScrollArea()
-        self.browser_scroll_area.setWidgetResizable(True)
-        layout.addWidget(self.browser_scroll_area)
+        # Toggle Button for showing/hiding settings
+        self.toggle_settings_button = QPushButton("Hide Settings")
+        self.toggle_settings_button.clicked.connect(self.toggle_settings)
+        main_layout.addWidget(self.toggle_settings_button)
 
+        # Browser view setup
         self.browser_view = QWebEngineView()
-        self.browser_scroll_area.setWidget(self.browser_view)
-        self.browser_view.setFixedSize(800, 600)
+        self.browser_view.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)  # Make browser view expandable
+        main_layout.addWidget(self.browser_view)
 
-        self.central_widget.setLayout(layout)
+        # Result label at the bottom
+        self.result_label = QLabel()
+        main_layout.addWidget(self.result_label)
+
+        # Set the main layout for the central widget
+        self.central_widget.setLayout(main_layout)
+
+    
+    def toggle_settings(self):
+        self.settings_widget.setVisible(not self.settings_widget.isVisible())
+        self.toggle_settings_button.setText("Show Settings" if not self.settings_widget.isVisible() else "Hide Settings")
 
     def open_virtual_browser(self):
         selected_browser = None
