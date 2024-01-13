@@ -41,6 +41,22 @@ class BrowserOpener(QMainWindow):
         self.browser_options = ["Chrome", "Edge", "Firefox", "Safari"]
         self.browser_radio_buttons = []
 
+        # Add fields for setting browser width and height
+        size_layout = QHBoxLayout()
+        self.width_input = QLineEdit()
+        self.width_input.setPlaceholderText("Width")
+        self.width_input.setFixedWidth(100)
+        self.height_input = QLineEdit()
+        self.height_input.setPlaceholderText("Height")
+        self.height_input.setFixedWidth(100)
+        size_button = QPushButton("Set Size")
+        size_button.clicked.connect(self.set_browser_size)
+        
+        size_layout.addWidget(self.width_input)
+        size_layout.addWidget(self.height_input)
+        size_layout.addWidget(size_button)
+        layout.addLayout(size_layout)
+
         for browser in self.browser_options:
             radio_button = QRadioButton(browser)
             radio_button.setIcon(QIcon(f"{browser.lower()}.png"))  # Assumes you have icons named like chrome.png, edge.png etc.
@@ -102,6 +118,14 @@ class BrowserOpener(QMainWindow):
         debugger = pdb.Pdb()
         debugger.reset()
         debugger.run(code_to_debug)
+    
+    def set_browser_size(self):
+        try:
+            width = int(self.width_input.text())
+            height = int(self.height_input.text())
+            self.browser_view.setFixedSize(width, height)
+        except ValueError:
+            self.result_label.setText("Please enter valid width and height values.")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
